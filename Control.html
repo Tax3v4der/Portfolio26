@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pump Monitoring System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        /* Custom styles that extend Tailwind */
+        .tab-button.active {
+            color: #0ea5e9;
+            border-color: #0ea5e9;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Smooth transitions for interactive elements */
+        button,
+        .tab-button {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .tab-button {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        industrial: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <i data-feather="activity" class="text-industrial-600 w-8 h-8 mr-3"></i>
+                <h1 class="text-2xl font-bold text-gray-800">Pump Monitoring System</h1>
+            </div>
+            <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                <span class="text-sm font-medium text-gray-600">Connected</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Status Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Pump Status -->
+                <div class="bg-white rounded-lg shadow p-4 border-l-4 border-industrial-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Pump Status</h3>
+                            <p class="text-2xl font-semibold text-gray-800">ON</p>
+                        </div>
+                        <i data-feather="power" class="text-industrial-500 w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <!-- Thermal Relay -->
+                <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Thermal Relay</h3>
+                            <p class="text-2xl font-semibold text-gray-800">OK</p>
+                        </div>
+                        <i data-feather="shield" class="text-green-500 w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <!-- Contactor Feedback -->
+                <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Contactor Feedback</h3>
+                            <p class="text-2xl font-semibold text-gray-800">MATCH</p>
+                        </div>
+                        <i data-feather="check-circle" class="text-green-500 w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <!-- Command State -->
+                <div class="bg-white rounded-lg shadow p-4 border-l-4 border-industrial-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Command State</h3>
+                            <p class="text-2xl font-semibold text-gray-800">ON</p>
+                        </div>
+                        <i data-feather="terminal" class="text-industrial-500 w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alarm Section -->
+            <div class="bg-white rounded-lg shadow p-4 mb-6 hidden" id="alarmSection">
+                <div class="flex items-center text-red-600">
+                    <i data-feather="alert-triangle" class="w-5 h-5 mr-2"></i>
+                    <span class="font-medium">ALARM: Contactor OFF without STOP command</span>
+                </div>
+            </div>
+
+            <!-- Temperature and Controls -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Temperature Cards -->
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-medium text-gray-700 mb-4">Temperature Monitoring</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded p-3">
+                            <p class="text-sm text-gray-500">Temp IN</p>
+                            <p class="text-2xl font-bold text-industrial-600">42°C</p>
+                        </div>
+                        <div class="bg-gray-50 rounded p-3">
+                            <p class="text-sm text-gray-500">Temp OUT</p>
+                            <p class="text-2xl font-bold text-industrial-600">38°C</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-medium text-gray-700 mb-4">Pump Controls</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button
+                            class="bg-industrial-500 hover:bg-industrial-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center transition-colors">
+                            <i data-feather="power" class="w-5 h-5 mr-2"></i>
+                            START
+                        </button>
+                        <button
+                            class="bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center transition-colors">
+                            <i data-feather="power" class="w-5 h-5 mr-2"></i>
+                            STOP
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">Controls disabled when offline or thermal fault detected</p>
+                </div>
+
+                <!-- Status Summary -->
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-medium text-gray-700 mb-4">System Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                            <span class="text-sm text-gray-600">Pump operational</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                            <span class="text-sm text-gray-600">No thermal faults</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                            <span class="text-sm text-gray-600">Command feedback match</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                            <span class="text-sm text-gray-600">Temperatures normal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px">
+                        <button
+                            class="tab-button active py-4 px-6 text-center border-b-2 font-medium text-sm border-industrial-500 text-industrial-600">
+                            Overview
+                        </button>
+                        <button
+                            class="tab-button py-4 px-6 text-center border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            History
+                        </button>
+                        <button
+                            class="tab-button py-4 px-6 text-center border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Graphs
+                        </button>
+                    </nav>
+                </div>
+                <div class="p-6">
+                    <!-- Overview Tab Content -->
+                    <div id="overviewTab" class="tab-content active">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-800 mb-3">Current Readings</h4>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Voltage</p>
+                                            <p class="text-xl font-semibold">230V</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Current</p>
+                                            <p class="text-xl font-semibold">4.2A</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Power</p>
+                                            <p class="text-xl font-semibold">966W</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Frequency</p>
+                                            <p class="text-xl font-semibold">50Hz</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-800 mb-3">Temperature Trend</h4>
+                                <div class="bg-gray-50 rounded-lg p-4 h-full">
+                                    <div class="h-40 flex items-center justify-center">
+                                        <p class="text-gray-400">Temperature graph will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Tab Content -->
+                    <div id="historyTab" class="tab-content hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Timestamp</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Event</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Source</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-15
+                                            14:32:45</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Pump started</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Manual</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Success</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-06-15
+                                            14:30:12</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">System check</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Automatic</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">OK</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Graphs Tab Content -->
+                    <div id="graphsTab" class="tab-content hidden">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h4 class="text-lg font-medium text-gray-800 mb-3">Temperature IN/OUT vs Time</h4>
+                                <div class="h-64 flex items-center justify-center">
+                                    <p class="text-gray-400">Temperature graph will appear here</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="text-lg font-medium text-gray-800 mb-3">Min Temp</h4>
+                                    <p class="text-2xl font-bold text-industrial-600">32°C</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="text-lg font-medium text-gray-800 mb-3">Max Temp</h4>
+                                    <p class="text-2xl font-bold text-industrial-600">45°C</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="text-lg font-medium text-gray-800 mb-3">Avg Temp</h4>
+                                    <p class="text-2xl font-bold text-industrial-600">38°C</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab switching functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to clicked button
+                    button.classList.add('active');
+
+                    // Show corresponding content
+                    const tabId = button.textContent.trim().toLowerCase() + 'Tab';
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Simulate alarm condition (for demo purposes)
+            setTimeout(() => {
+                const alarmSection = document.getElementById('alarmSection');
+                alarmSection.classList.remove('hidden');
+            }, 5000);
+
+            // Pump control buttons
+            const startButton = document.querySelector('button:contains("START")');
+            const stopButton = document.querySelector('button:contains("STOP")');
+
+            // In a real application, these would make API calls to control the pump
+            if (startButton) {
+                startButton.addEventListener('click', () => {
+                    console.log('START command sent');
+                    // Update UI to reflect pump is starting
+                });
+            }
+
+            if (stopButton) {
+                stopButton.addEventListener('click', () => {
+                    console.log('STOP command sent');
+                    // Update UI to reflect pump is stopping
+                });
+            }
+
+            // Simulate real-time data updates
+            setInterval(() => {
+                // In a real application, this would fetch data from an API
+                const tempInElement = document.querySelector('p:contains("Temp IN")').nextElementSibling;
+                const tempOutElement = document.querySelector('p:contains("Temp OUT")').nextElementSibling;
+
+                if (tempInElement && tempOutElement) {
+                    // Random temperature fluctuation for demo
+                    const currentTempIn = parseInt(tempInElement.textContent);
+                    const currentTempOut = parseInt(tempOutElement.textContent);
+
+                    const newTempIn = currentTempIn + (Math.random() * 2 - 1);
+                    const newTempOut = currentTempOut + (Math.random() * 2 - 1);
+
+                    tempInElement.textContent = Math.round(newTempIn * 10) / 10 + '°C';
+                    tempOutElement.textContent = Math.round(newTempOut * 10) / 10 + '°C';
+                }
+            }, 3000);
+        });
+
+        feather.replace();
+    </script>
+    <script src="https://huggingface.co/deepsite/deepsite-badge.js"></script>
+</body>
+
+</html>
